@@ -1,0 +1,44 @@
+-- 1. CLEANUP (Optional - Clears existing data to prevent ID conflicts)
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE notification;
+TRUNCATE TABLE claim;
+TRUNCATE TABLE dependent;
+TRUNCATE TABLE enrollment;
+TRUNCATE TABLE policy;
+TRUNCATE TABLE employee;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- 2. SYSTEM USERS (Password for all: 'password123')
+INSERT INTO employee (name, email, password, phone, address, role) VALUES 
+('Murali Admin', 'admin@example.com', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07OfSTi17mOHu9K6DG', '9988776655', 'Bangalore HQ', 'ROLE_ADMIN'),
+('Rahul HR', 'hr@example.com', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07OfSTi17mOHu9K6DG', '8877665544', 'Mumbai Branch', 'ROLE_HR'),
+('Suresh Kumar', 'suresh@example.com', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07OfSTi17mOHu9K6DG', '7766554433', 'Koramangala, BTM Layout', 'ROLE_EMPLOYEE');
+
+-- 3. POLICIES (All amounts in ₹)
+INSERT INTO policy (policy_name, policy_type, premium_amount, coverage_amount) VALUES 
+('Corporate Shield Platinum', 'FAMILY', 5000.00, 1000000.00),
+('Standard Health Gold', 'FAMILY', 3000.00, 500000.00),
+('Individual Basic Care', 'INDIVIDUAL', 1500.00, 200000.00);
+
+-- 4. ENROLLMENTS (Suresh enrolling in Platinum Family Plan)
+-- Final premium calculated as: 5000 (Base) + 200 (Spouse) + 300 (Father) + 300 (Mother) + 150 (Child) = 5950
+INSERT INTO enrollment (employee_id, policy_id, enrollment_date, status, total_premium) VALUES 
+(3, 1, CURDATE(), 'ACTIVE', 5950.00);
+
+-- 5. FAMILY DEPENDENTS (For Suresh's Enrollment ID 1)
+INSERT INTO dependent (name, age, relationship, enrollment_id) VALUES 
+('Lata (Wife)', 32, 'WIFE/SPOUSE', 1),
+('Kiran (Father)', 65, 'FATHER', 1),
+('Savita (Mother)', 61, 'MOTHER', 1),
+('Aryan (Child)', 8, 'CHILD', 1);
+
+-- 6. SAMPLE CLAIMS
+INSERT INTO claim (enrollment_id, claim_amount, claim_date, claim_reason, claim_status, rejection_reason) VALUES 
+(1, 15000.00, DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'Dental Surgery', 'APPROVED', NULL),
+(1, 4500.00, CURDATE(), 'General Fever and Lab Tests', 'SUBMITTED', NULL);
+
+-- 7. NOTIFICATIONS
+INSERT INTO notification (user_id, message, target_role, is_read, created_date) VALUES 
+(3, 'Welcome Suresh! Your enrollment in Corporate Shield Platinum is successful.', NULL, 0, NOW()),
+(3, 'Your Claim #1 for ₹15000.00 has been APPROVED.', NULL, 0, NOW()),
+(NULL, 'System Alert: New Claim submitted for ₹4500.00 by Suresh Kumar', 'ROLE_ADMIN', 0, NOW());
